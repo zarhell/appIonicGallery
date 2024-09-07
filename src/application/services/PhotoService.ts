@@ -2,7 +2,7 @@ import { Camera, CameraResultType, CameraSource, Photo as CameraPhoto } from '@c
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Photo } from '../../domain/entities/Photo';
 
-export async function takePhoto(): Promise<Photo> {
+export async function takePhoto(): Promise<Photo> {  // Named export
   const photo = await Camera.getPhoto({
     resultType: CameraResultType.Uri,
     source: CameraSource.Camera,
