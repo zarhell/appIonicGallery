@@ -1,0 +1,7 @@
+{
+  "name": "appIonicGallery",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
