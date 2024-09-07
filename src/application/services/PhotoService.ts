@@ -1,31 +1,23 @@
-import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
+import { Camera, CameraResultType, CameraSource, Photo as CameraPhoto } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Storage } from '@capacitor/storage';
+import { Photo } from '../../domain/entities/Photo';
 
-
-export interface UserPhoto {
-  filepath: string;
-  webviewPath?: string;
-}
-
-export async function takePhoto(): Promise<UserPhoto> {
-  
-  const capturedPhoto = await Camera.getPhoto({
+export async function takePhoto(): Promise<Photo> {
+  const photo = await Camera.getPhoto({
     resultType: CameraResultType.Uri,
     source: CameraSource.Camera,
     quality: 100,
   });
 
-  
-  const savedFile = await savePicture(capturedPhoto);
-  return savedFile;
+  const savedPhoto = await savePhoto(photo);
+  return savedPhoto;
 }
 
-async function savePicture(photo: Photo): Promise<UserPhoto> {
-  const base64Data = await readAsBase64(photo);
+async function savePhoto(cameraPhoto: CameraPhoto): Promise<Photo> {
+  const base64Data = await readAsBase64(cameraPhoto);
 
-  const fileName = new Date().getTime() + '.jpeg';
-  const savedFile = await Filesystem.writeFile({
+  const fileName = `${new Date().getTime()}.jpeg`;
+  await Filesystem.writeFile({
     path: fileName,
     data: base64Data,
     directory: Directory.Data,
@@ -33,24 +25,22 @@ async function savePicture(photo: Photo): Promise<UserPhoto> {
 
   return {
     filepath: fileName,
-    webviewPath: photo.webPath,
+    webviewPath: cameraPhoto.webPath,
   };
 }
 
-async function readAsBase64(photo: Photo): Promise<string> {
-  // Obtener la imagen en formato blob
-  const ImageResponse = await fetch(photo.webPath!);
-  const imageBlob = await ImageResponse.blob();
-
-  return await convertBlobToBase64(imageBlob) as string;
+async function readAsBase64(photo: CameraPhoto): Promise<string> {
+  const response = await fetch(photo.webPath!);
+  const blob = await response.blob();
+  return await convertBlobToBase64(blob);
 }
 
-function convertBlobToBase64(blob: Blob) {
+function convertBlobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
     reader.onload = () => {
-      resolve(reader.result);
+      resolve(reader.result as string);
     };
     reader.readAsDataURL(blob);
   });

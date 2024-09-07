@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon, IonGrid, IonRow, IonCol, IonImg } from '@ionic/react';
 import { camera } from 'ionicons/icons';
-import { takePhoto, UserPhoto } from '../application/services/PhotoService';
+import { takePhoto, UserPhoto } from '../../application/services/PhotoService';
 import './Tab1.css';
 
 const Tab1: React.FC = () => {
