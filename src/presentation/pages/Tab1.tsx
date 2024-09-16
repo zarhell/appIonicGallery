@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon, IonGrid, IonRow, IonCol, IonImg } from '@ionic/react';
 import { camera } from 'ionicons/icons';
-import { takePhoto, UserPhoto } from '../../application/services/PhotoService';
+import { takePhoto } from '../../application/services/PhotoService';
+import { Photo } from '../../domain/entities/Photo';
 import './Tab1.css';
 
+
 const Tab1: React.FC = () => {
-  const [photos, setPhotos] = useState<UserPhoto[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const addPhotoToGallery = async () => {
     const newPhoto = await takePhoto();

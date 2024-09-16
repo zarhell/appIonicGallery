@@ -6,7 +6,7 @@ export class AddPhotoToGallery {
   constructor(private photoRepository: PhotoRepository) {}
 
   async execute(): Promise<Photo> {
-    const newPhoto = await takePhoto();  // Directly use takePhoto
+    const newPhoto = await takePhoto();
     await this.photoRepository.save(newPhoto);
     return newPhoto;
   }
