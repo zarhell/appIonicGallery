@@ -11,6 +11,7 @@ import {
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { ellipse, square, triangle } from 'ionicons/icons';
+import AppRoutes from './presentation/routes/AppRoutes';
 import Tab1 from './presentation/pages/Tab1';
 import Tab2 from './presentation/pages/Tab2';
 import Tab3 from './presentation/pages/Tab3';
@@ -30,6 +31,8 @@ import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
+
+
 
 /**
  * Ionic Dark Mode
@@ -52,6 +55,7 @@ const App: React.FC = () => (
     <IonReactRouter>
       <IonTabs>
         <IonRouterOutlet>
+        <AppRoutes />
           <Route exact path="/tab1">
             <Tab1 />
           </Route>
