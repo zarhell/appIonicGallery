@@ -6,7 +6,6 @@ export interface Location {
 }
 
 export class GeolocationService {
-  // Obtener la ubicación actual del GPS
   static async getCurrentLocation(): Promise<Location | null> {
     try {
       const position = await Geolocation.getCurrentPosition();
