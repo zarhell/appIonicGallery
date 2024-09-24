@@ -1,79 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { IonButton, IonContent, IonInput, IonPage, IonTitle, IonToolbar, IonHeader, IonItem, IonLabel, IonImg, IonGrid, IonRow, IonCol } from '@ionic/react';
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonMenuButton,
+  IonBackButton,
+  IonButtons,
+  IonLabel,
+  IonInput,
+  IonItem
+} from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { GeolocationService, Location as GeoLocation } from '../../application/services/GeolocationService';
-import { takePhoto } from '../../application/services/PhotoService';
-import { Photo } from '../../domain/entities/Photo';
 import { LocalStorageService } from '../../application/services/LocalStorageService';
+import { Photo } from '../../domain/entities/Photo'; 
+
+interface FormData {
+  fullName: string;
+  idNumber: string;
+  age: string;
+  gender: string;
+  location: { latitude: number; longitude: number } | null;
+  photos: Photo[];
+}
 
 const RegisterPatient: React.FC = () => {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [identification, setIdentification] = useState('');
-  const [condition, setCondition] = useState('');
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [location, setLocation] = useState<GeoLocation | null>(null);
-  const [manualLocation, setManualLocation] = useState('');
+  const [formData, setFormData] = useState<FormData>({
+    fullName: '', 
+    idNumber: '', 
+    age: '', 
+    gender: '', 
+    location: null, 
+    photos: []
+  });
+
   const history = useHistory();
-  const locationState = useLocation<{ location: GeoLocation } | undefined>();
+  const locationState = useLocation<{ photos?: Photo[], location?: { latitude: number, longitude: number } }>();
 
   useEffect(() => {
     loadFormData();
-    if (locationState?.state?.location) {
-      setLocation(locationState.state.location);
+    
+    if (locationState.state?.photos) {
+      setFormData((prevData) => ({
+        ...prevData, 
+        photos: locationState.state.photos || []
+      }));
+    }
+
+    if (locationState.state?.location) {
+      setFormData((prevData) => ({
+        ...prevData, 
+        location: locationState.state.location || null
+      }));
     }
   }, [locationState]);
 
   const loadFormData = async () => {
     const savedData = await LocalStorageService.getData('patientForm');
     if (savedData) {
-      setName(savedData.name || '');
-      setAge(savedData.age || '');
-      setIdentification(savedData.identification || '');
-      setCondition(savedData.condition || '');
-      setPhotos(savedData.photos || []);
-      setLocation(savedData.location || null);
+      setFormData(savedData);
     }
   };
 
-  const saveFormData = async () => {
-    const formData = {
-      name,
-      age,
-      identification,
-      condition,
-      photos,
-      location,
-    };
+  const handleSubmit = async () => {
     await LocalStorageService.saveData('patientForm', formData);
-  };
-
-  // Obtener ubicación desde GPS y abrir el mapa
-  const handleOpenMap = async () => {
-    const gpsLocation = await GeolocationService.getCurrentLocation();
-    if (gpsLocation) {
-      history.push('/map', { gpsLocation });
-    } else {
-      // Si no se puede obtener la ubicación del GPS, redirigir al mapa para seleccionar manualmente
-      history.push('/map');
-    }
-  };
-
-  const handleTakePhoto = async () => {
-    const newPhoto = await takePhoto();
-    setPhotos([...photos, newPhoto]);
-  };
-
-  const handleSubmit = () => {
-    console.log({
-      name,
-      age,
-      identification,
-      condition,
-      location,
-      photos,
-    });
-    saveFormData();
+    console.log('Patient data submitted:', formData);
   };
 
   return (
@@ -85,75 +78,39 @@ const RegisterPatient: React.FC = () => {
       </IonHeader>
       <IonContent>
         <IonItem>
-          <IonLabel position="stacked">Nombre</IonLabel>
-          <IonInput
-            value={name}
-            placeholder="Nombre"
-            onIonChange={(e: CustomEvent) => setName(e.detail.value!)}
+          <IonLabel position="floating">Nombre Completo</IonLabel>
+          <IonInput 
+            value={formData.fullName} 
+            onIonChange={(e: CustomEvent) => setFormData({ ...formData, fullName: e.detail.value! })} 
           />
         </IonItem>
-
         <IonItem>
-          <IonLabel position="stacked">Edad</IonLabel>
-          <IonInput
-            value={age}
-            type="number"
-            placeholder="Edad"
-            onIonChange={(e: CustomEvent) => setAge(e.detail.value!)}
+          <IonLabel position="floating">Número de ID</IonLabel>
+          <IonInput 
+            value={formData.idNumber} 
+            onIonChange={(e: CustomEvent) => setFormData({ ...formData, idNumber: e.detail.value! })} 
           />
         </IonItem>
-
-        <IonItem>
-          <IonLabel position="stacked">Identificación</IonLabel>
-          <IonInput
-            value={identification}
-            placeholder="Identificación"
-            onIonChange={(e: CustomEvent) => setIdentification(e.detail.value!)}
-          />
-        </IonItem>
-
-        <IonItem>
-          <IonLabel position="stacked">Condición</IonLabel>
-          <IonInput
-            value={condition}
-            placeholder="Condición"
-            onIonChange={(e: CustomEvent) => setCondition(e.detail.value!)}
-          />
-        </IonItem>
-
-        {/* Botón para gestionar la ubicación (GPS o selección manual) */}
-        <IonButton expand="block" onClick={handleOpenMap}>
+        <IonButton 
+          expand="block" 
+          onClick={() => history.push('/photo-registration', { patientId: 'some-id' })}
+        >
+          Registrar Fotos
+        </IonButton>
+        <IonButton 
+          expand="block" 
+          onClick={() => history.push('/map', { patientId: 'some-id' })}
+        >
           Seleccionar Ubicación
         </IonButton>
-        
-        {location && (
-          <IonItem>
-            <IonLabel>Latitud: {location.latitude}</IonLabel>
-            <IonLabel>Longitud: {location.longitude}</IonLabel>
-          </IonItem>
-        )}
-
-        <IonButton expand="block" onClick={handleTakePhoto}>
-          Tomar Foto
-        </IonButton>
-
-        {/* Mostrar las fotos tomadas */}
-        <IonGrid>
-          <IonRow>
-            {photos.map((photo, index) => (
-              <IonCol size="6" key={index}>
-                <IonImg src={photo.webviewPath} />
-              </IonCol>
-            ))}
-          </IonRow>
-        </IonGrid>
 
         <IonButton expand="block" onClick={handleSubmit}>
-          Enviar
+          Enviar Registro
         </IonButton>
       </IonContent>
     </IonPage>
   );
 };
+
 
 export default RegisterPatient;

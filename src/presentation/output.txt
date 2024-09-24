@@ -1,0 +1,969 @@
+File: ./components/AddPhotoButton.tsx
+import React from 'react';
+import { IonFab, IonFabButton, IonIcon } from '@ionic/react';
+import { camera } from 'ionicons/icons';
+
+interface AddPhotoButtonProps {
+  onClick: () => void;
+}
+
+const AddPhotoButton: React.FC<AddPhotoButtonProps> = ({ onClick }) => {
+  return (
+    <IonFab vertical="bottom" horizontal="center" slot="fixed">
+      <IonFabButton onClick={onClick}>
+        <IonIcon icon={camera} />
+      </IonFabButton>
+    </IonFab>
+  );
+};
+
+export default AddPhotoButton;
+File: ./components/PhotoGallery.tsx
+import React from 'react';
+import { IonGrid, IonRow, IonCol, IonImg } from '@ionic/react';
+import { Photo } from '../../domain/entities/Photo';
+
+interface PhotoGalleryProps {
+  photos: Photo[];
+}
+
+const PhotoGallery: React.FC<PhotoGalleryProps> = ({ photos }) => {
+  return (
+    <IonGrid>
+      <IonRow>
+        {photos.map((photo, index) => (
+          <IonCol size="6" key={index}>
+            <IonImg src={photo.webviewPath} />
+          </IonCol>
+        ))}
+      </IonRow>
+    </IonGrid>
+  );
+};
+
+export default PhotoGallery;
+File: ./components/PhotoItem.tsx
+import React from 'react';
+import { IonImg } from '@ionic/react';
+import { Photo } from '../../domain/entities/Photo';
+
+interface PhotoItemProps {
+  photo: Photo;
+}
+
+const PhotoItem: React.FC<PhotoItemProps> = ({ photo }) => {
+  return <IonImg src={photo.webviewPath} />;
+};
+
+export default PhotoItem;
+File: ./components/SideMenu.tsx
+import React from 'react';
+import { IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel } from '@ionic/react';
+import { useHistory } from 'react-router-dom';
+
+const SideMenu: React.FC = () => {
+  const history = useHistory();
+
+  const handleMenuItemClick = (path: string) => {
+    history.push(path);
+  };
+
+  return (
+    <IonMenu contentId="main-content">
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Menú</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <IonList>
+          <IonItem button onClick={() => handleMenuItemClick('/register-patient')}>
+            <IonLabel>Registrar Paciente</IonLabel>
+          </IonItem>
+          <IonItem button onClick={() => handleMenuItemClick('/registered-users')}>
+            <IonLabel>Usuarios Registrados</IonLabel>
+          </IonItem>
+        </IonList>
+      </IonContent>
+    </IonMenu>
+  );
+};
+
+export default SideMenu;
+File: ./pages/ClinicalState.tsx
+import React from 'react';
+import {
+  IonPage, IonContent, IonInput, IonItem, IonLabel, IonButton
+} from '@ionic/react';
+
+const ClinicalState: React.FC<{
+  formData: any;
+  handleInputChange: (e: any) => void;
+  navigateToNext: () => void;
+  navigateToPrev: () => void;
+}> = ({ formData, handleInputChange, navigateToNext, navigateToPrev }) => {
+  return (
+    <IonPage>
+      <IonContent>
+        <h2>Estado Clínico</h2>
+        <IonItem>
+          <IonLabel position="floating">Frecuencia Cardíaca</IonLabel>
+          <IonInput
+            name="heartRate"
+            type="number"
+            value={formData.heartRate}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel position="floating">Presión Arterial</IonLabel>
+          <IonInput
+            name="bloodPressure"
+            type="text"
+            value={formData.bloodPressure}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel position="floating">Temperatura</IonLabel>
+          <IonInput
+            name="temperature"
+            type="number"
+            value={formData.temperature}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+
+        <IonButton expand="block" onClick={navigateToPrev}>
+          Atrás
+        </IonButton>
+        <IonButton expand="block" onClick={navigateToNext}>
+          Siguiente
+        </IonButton>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default ClinicalState;
+File: ./pages/GeneralInfo.tsx
+import React from 'react';
+import {
+  IonContent,
+  IonPage,
+  IonInput,
+  IonLabel,
+  IonItem,
+  IonButton,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/react';
+
+interface GeneralInfoProps {
+  formData: {
+    fullName: string;
+    idNumber: string;
+    age: string;
+    gender: string;
+  };
+  handleInputChange: (e: CustomEvent) => void;
+  navigateToNext: () => void;
+}
+
+const GeneralInfo: React.FC<GeneralInfoProps> = ({ formData, handleInputChange, navigateToNext }) => {
+  return (
+    <IonPage>
+      <IonContent>
+        <h2>Información General</h2>
+        <IonItem>
+          <IonLabel position="floating">Nombre Completo</IonLabel>
+          <IonInput
+            name="fullName"
+            type="text"
+            value={formData.fullName}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel position="floating">Número de ID</IonLabel>
+          <IonInput
+            name="idNumber"
+            type="text"
+            value={formData.idNumber}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel position="floating">Edad</IonLabel>
+          <IonInput name="age" type="number" value={formData.age} onIonChange={handleInputChange} />
+        </IonItem>
+        <IonItem>
+          <IonLabel>Género</IonLabel>
+          <IonSelect name="gender" value={formData.gender} onIonChange={handleInputChange}>
+            <IonSelectOption value="Male">Masculino</IonSelectOption>
+            <IonSelectOption value="Female">Femenino</IonSelectOption>
+            <IonSelectOption value="Other">Otro</IonSelectOption>
+          </IonSelect>
+        </IonItem>
+
+        <IonButton expand="block" onClick={navigateToNext}>
+          Siguiente
+        </IonButton>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default GeneralInfo;
+File: ./pages/Login.tsx
+import React, { useState } from 'react';
+import { IonButton, IonContent, IonInput, IonPage, IonTitle, IonToolbar, IonHeader, IonToast } from '@ionic/react';
+import { useHistory } from 'react-router-dom';
+import { AuthService } from '../../application/services/AuthService';
+
+const Login: React.FC = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const history = useHistory();
+
+  const handleLogin = () => {
+    if (AuthService.login(username, password)) {
+      history.push('/register-patient');
+    } else {
+      setShowToast(true);
+    }
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Login</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <IonInput
+          value={username}
+          placeholder="Username"
+          onIonChange={(e: CustomEvent) => setUsername(e.detail.value!)}
+          clearInput
+        />
+        <IonInput
+          value={password}
+          type="password"
+          placeholder="Password"
+          onIonChange={(e: CustomEvent) => setPassword(e.detail.value!)}
+          clearInput
+        />
+        <IonButton expand="block" onClick={handleLogin}>
+          Login
+        </IonButton>
+        <IonToast
+          isOpen={showToast}
+          onDidDismiss={() => setShowToast(false)}
+          message="Invalid credentials."
+          duration={2000}
+        />
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default Login;
+File: ./pages/MapPage.tsx
+import React, { useState, useEffect } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/react';
+
+interface Location {
+  latitude: number;
+  longitude: number;
+}
+
+const MapPage: React.FC = () => {
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [initialLocation, setInitialLocation] = useState<Location | null>(null);
+  const history = useHistory();
+  const locationState = useLocation<{ gpsLocation: Location } | undefined>();
+
+  useEffect(() => {
+    if (locationState?.state?.gpsLocation) {
+      setInitialLocation(locationState.state.gpsLocation);
+    } else {
+      setInitialLocation({
+        latitude: 51.505,
+        longitude: -0.09,
+      });
+    }
+  }, [locationState]);
+
+  const MapClickHandler = () => {
+    useMapEvents({
+      click(e) {
+        const location = {
+          latitude: e.latlng.lat,
+          longitude: e.latlng.lng,
+        };
+        setSelectedLocation(location);
+      },
+    });
+    return selectedLocation ? <Marker position={[selectedLocation.latitude, selectedLocation.longitude]}></Marker> : null;
+  };
+
+  const handleConfirmLocation = () => {
+    if (selectedLocation) {
+      history.push('/register-patient', { location: selectedLocation });
+    } else if (initialLocation) {
+      history.push('/register-patient', { location: initialLocation });
+    }
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Seleccionar Ubicación en el Mapa</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        {initialLocation && (
+          <MapContainer center={[initialLocation.latitude, initialLocation.longitude]} zoom={13} style={{ height: '400px', width: '100%' }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <MapClickHandler />
+        </MapContainer>
+        )}
+        {selectedLocation || initialLocation ? (
+          <IonButton expand="block" onClick={handleConfirmLocation}>
+            Confirmar Ubicación
+          </IonButton>
+        ) : (
+          <IonButton expand="block" disabled>
+            Confirmar Ubicación
+          </IonButton>
+        )}
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default MapPage;
+File: ./pages/MedicalProcedures.tsx
+import React from 'react';
+import {
+  IonPage, IonContent, IonInput, IonItem, IonLabel, IonButton, IonSelect, IonSelectOption
+} from '@ionic/react';
+
+const MedicalProcedures: React.FC<{
+  formData: any;
+  handleInputChange: (e: any) => void;
+  navigateToNext: () => void;
+  navigateToPrev: () => void;
+}> = ({ formData, handleInputChange, navigateToNext, navigateToPrev }) => {
+  return (
+    <IonPage>
+      <IonContent>
+        <h2>Procedimientos Médicos</h2>
+        <IonItem>
+          <IonLabel position="floating">Número de Ambulancia</IonLabel>
+          <IonInput
+            name="ambulanceNumber"
+            type="text"
+            value={formData.ambulanceNumber}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel>Tipo de Ambulancia</IonLabel>
+          <IonSelect
+            name="ambulanceType"
+            value={formData.ambulanceType}
+            onIonChange={handleInputChange}
+          >
+            <IonSelectOption value="Basic">Básica</IonSelectOption>
+            <IonSelectOption value="Medicalized">Medicalizada</IonSelectOption>
+            <IonSelectOption value="Neonatal">Neonatal</IonSelectOption>
+            <IonSelectOption value="Psychiatric">Psiquiátrica</IonSelectOption>
+            <IonSelectOption value="Others">Otras</IonSelectOption>
+          </IonSelect>
+        </IonItem>
+
+        <IonButton expand="block" onClick={navigateToPrev}>
+          Atrás
+        </IonButton>
+        <IonButton expand="block" onClick={navigateToNext}>
+          Siguiente
+        </IonButton>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default MedicalProcedures;
+File: ./pages/PatientRegistrationForm.tsx
+import React, { useState, useEffect } from 'react';
+import {
+  IonContent, IonPage, IonButton, IonProgressBar, IonHeader, IonToolbar, IonTitle,
+  IonButtons, IonBackButton, IonMenuButton
+} from '@ionic/react';
+import { useIonRouter } from '@ionic/react';
+import { LocalStorageService } from '../../application/services/LocalStorageService';
+
+import GeneralInfo from './GeneralInfo';
+import TransferDetails from './TransferDetails';
+import ClinicalState from './ClinicalState';
+import MedicalProcedures from './MedicalProcedures';
+
+const PatientRegistrationForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    fullName: '', idNumber: '', age: '', gender: '',
+    transferDate: '', originPlace: '', destinationPlace: '',
+    heartRate: '', bloodPressure: '', temperature: '',
+    ambulanceNumber: '', ambulanceType: '', transferReason: ''
+  });
+
+  const [step, setStep] = useState(0);
+  const router = useIonRouter();
+
+  useEffect(() => {
+    const loadSavedData = async () => {
+      const savedData = await LocalStorageService.getData('patientForm');
+      if (savedData) {
+        setFormData(savedData);
+      }
+    };
+    loadSavedData();
+  }, []);
+
+
+  const handleInputChange = (e: any) => {
+    const { name, value } = e.target;
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+    LocalStorageService.saveData('patientForm', updatedData);
+  };
+
+
+  const navigateToNext = () => setStep(step + 1);
+  const navigateToPrev = () => setStep(step - 1);
+
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return <GeneralInfo formData={formData} handleInputChange={handleInputChange} navigateToNext={navigateToNext} />;
+      case 1:
+        return <TransferDetails formData={formData} handleInputChange={handleInputChange} navigateToNext={navigateToNext} navigateToPrev={navigateToPrev} />;
+      case 2:
+        return <ClinicalState formData={formData} handleInputChange={handleInputChange} navigateToNext={navigateToNext} navigateToPrev={navigateToPrev} />;
+      case 3:
+        return <MedicalProcedures formData={formData} handleInputChange={handleInputChange} navigateToNext={navigateToNext} navigateToPrev={navigateToPrev} />;
+      default:
+        return <GeneralInfo formData={formData} handleInputChange={handleInputChange} navigateToNext={navigateToNext} />;
+    }
+  };
+
+  const renderProgressBar = () => {
+    const progress = (step + 1) / 4;
+    return <IonProgressBar value={progress} color="primary" />;
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/" />
+            <IonMenuButton />
+          </IonButtons>
+          <IonTitle>Registro del Paciente</IonTitle>
+        </IonToolbar>
+        {renderProgressBar()}
+      </IonHeader>
+      <IonContent>
+        {renderStep()}
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default PatientRegistrationForm;
+File: ./pages/PhotoRegistration.tsx
+import React, { useState, useEffect } from 'react';
+import { IonButton, IonContent, IonPage, IonTitle, IonToolbar, IonHeader, IonGrid, IonRow, IonCol, IonImg } from '@ionic/react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { takePhoto } from '../../application/services/PhotoService';
+import { Photo } from '../../domain/entities/Photo';
+import { LocalStorageService } from '../../application/services/LocalStorageService';
+
+const PhotoRegistration: React.FC = () => {
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const history = useHistory();
+  const locationState = useLocation<{ patientId: string }>();
+
+  useEffect(() => {
+    loadPhotos();
+  }, []);
+
+  const loadPhotos = async () => {
+    const savedPhotos = await LocalStorageService.getData(`photos_${locationState.state.patientId}`);
+    if (savedPhotos) {
+      setPhotos(savedPhotos);
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    const newPhoto = await takePhoto();
+    const updatedPhotos = [...photos, newPhoto];
+    setPhotos(updatedPhotos);
+    await LocalStorageService.saveData(`photos_${locationState.state.patientId}`, updatedPhotos);
+  };
+
+  const handleConfirmPhotos = () => {
+    history.push('/register-patient', { photos });
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Registrar Fotos</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <IonButton expand="block" onClick={handleTakePhoto}>
+          Tomar Foto
+        </IonButton>
+
+        <IonGrid>
+          <IonRow>
+            {photos.map((photo, index) => (
+              <IonCol size="6" key={index}>
+                <IonImg src={photo.webviewPath} />
+              </IonCol>
+            ))}
+          </IonRow>
+        </IonGrid>
+
+        <IonButton expand="block" onClick={handleConfirmPhotos}>
+          Confirmar Fotos
+        </IonButton>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default PhotoRegistration;
+File: ./pages/RegisteredUsers.tsx
+import React, { useState, useEffect } from 'react';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel } from '@ionic/react';
+import { LocalStorageService } from '../../application/services/LocalStorageService';
+
+const RegisteredUsers: React.FC = () => {
+  const [users, setUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadRegisteredUsers();
+  }, []);
+
+  const loadRegisteredUsers = async () => {
+    const savedUsers = await LocalStorageService.getData('registeredUsers');
+    if (savedUsers) {
+      setUsers(savedUsers);
+    }
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Usuarios Registrados</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <IonList>
+          {users.map((user, index) => (
+            <IonItem key={index}>
+              <IonLabel>
+                {user.name} - {user.age} años
+              </IonLabel>
+            </IonItem>
+          ))}
+        </IonList>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default RegisteredUsers;
+File: ./pages/RegisterPatient.tsx
+import React, { useState, useEffect } from 'react';
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonMenuButton,
+  IonBackButton,
+  IonButtons,
+  IonLabel,
+  IonInput,
+  IonItem
+} from '@ionic/react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { LocalStorageService } from '../../application/services/LocalStorageService';
+import { Photo } from '../../domain/entities/Photo'; 
+
+interface FormData {
+  fullName: string;
+  idNumber: string;
+  age: string;
+  gender: string;
+  location: { latitude: number; longitude: number } | null;
+  photos: Photo[];
+}
+
+const RegisterPatient: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
+    fullName: '', 
+    idNumber: '', 
+    age: '', 
+    gender: '', 
+    location: null, 
+    photos: []
+  });
+
+  const history = useHistory();
+  const locationState = useLocation<{ photos?: Photo[], location?: { latitude: number, longitude: number } }>();
+
+  useEffect(() => {
+    loadFormData();
+    
+    if (locationState.state?.photos) {
+      setFormData((prevData) => ({
+        ...prevData, 
+        photos: locationState.state.photos || []
+      }));
+    }
+
+    if (locationState.state?.location) {
+      setFormData((prevData) => ({
+        ...prevData, 
+        location: locationState.state.location || null
+      }));
+    }
+  }, [locationState]);
+
+  const loadFormData = async () => {
+    const savedData = await LocalStorageService.getData('patientForm');
+    if (savedData) {
+      setFormData(savedData);
+    }
+  };
+
+  const handleSubmit = async () => {
+    await LocalStorageService.saveData('patientForm', formData);
+    console.log('Patient data submitted:', formData);
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Registrar Paciente</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <IonItem>
+          <IonLabel position="floating">Nombre Completo</IonLabel>
+          <IonInput 
+            value={formData.fullName} 
+            onIonChange={(e: CustomEvent) => setFormData({ ...formData, fullName: e.detail.value! })} 
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel position="floating">Número de ID</IonLabel>
+          <IonInput 
+            value={formData.idNumber} 
+            onIonChange={(e: CustomEvent) => setFormData({ ...formData, idNumber: e.detail.value! })} 
+          />
+        </IonItem>
+        <IonButton 
+          expand="block" 
+          onClick={() => history.push('/photo-registration', { patientId: 'some-id' })}
+        >
+          Registrar Fotos
+        </IonButton>
+        <IonButton 
+          expand="block" 
+          onClick={() => history.push('/map', { patientId: 'some-id' })}
+        >
+          Seleccionar Ubicación
+        </IonButton>
+
+        <IonButton expand="block" onClick={handleSubmit}>
+          Enviar Registro
+        </IonButton>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default RegisterPatient;
+File: ./pages/Tab1.css
+File: ./pages/Tab1.tsx
+import React, { useState } from 'react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonFab, IonFabButton, IonIcon, IonGrid, IonRow, IonCol, IonImg } from '@ionic/react';
+import { camera } from 'ionicons/icons';
+import { takePhoto } from '../../application/services/PhotoService';
+import { Photo } from '../../domain/entities/Photo';
+import './Tab1.css';
+
+
+const Tab1: React.FC = () => {
+  const [photos, setPhotos] = useState<Photo[]>([]);
+
+  const addPhotoToGallery = async () => {
+    const newPhoto = await takePhoto();
+    setPhotos([newPhoto, ...photos]);
+  };
+
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Photo Gallery</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent fullscreen>
+        <IonGrid>
+          <IonRow>
+            {photos.map((photo, index) => (
+              <IonCol size="6" key={index}>
+                <IonImg src={photo.webviewPath} />
+              </IonCol>
+            ))}
+          </IonRow>
+        </IonGrid>
+        <IonFab vertical="bottom" horizontal="center" slot="fixed">
+          <IonFabButton onClick={addPhotoToGallery}>
+            <IonIcon icon={camera}></IonIcon>
+          </IonFabButton>
+        </IonFab>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default Tab1;File: ./pages/Tab2.css
+File: ./pages/Tab2.tsx
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import ExploreContainer from '../../components/ExploreContainer';
+import './Tab2.css';
+
+const Tab2: React.FC = () => {
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Tab 2</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent fullscreen>
+        <IonHeader collapse="condense">
+          <IonToolbar>
+            <IonTitle size="large">Tab 2</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <ExploreContainer name="Tab 2 page" />
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default Tab2;File: ./pages/Tab3.css
+File: ./pages/Tab3.tsx
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import ExploreContainer from '../../components/ExploreContainer';
+import './Tab3.css';
+
+const Tab3: React.FC = () => {
+  return (
+    <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Tab 3</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent fullscreen>
+        <IonHeader collapse="condense">
+          <IonToolbar>
+            <IonTitle size="large">Tab 3</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <ExploreContainer name="Tab 3 page" />
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default Tab3;File: ./pages/TransferDetails.tsx
+import React from 'react';
+import {
+  IonPage, IonContent, IonInput, IonItem, IonLabel, IonButton, IonSelect, IonSelectOption, IonDatetime
+} from '@ionic/react';
+
+const TransferDetails: React.FC<{
+  formData: any;
+  handleInputChange: (e: any) => void;
+  navigateToNext: () => void;
+  navigateToPrev: () => void;
+}> = ({ formData, handleInputChange, navigateToNext, navigateToPrev }) => {
+  return (
+    <IonPage>
+      <IonContent>
+        <h2>Detalles del Traslado</h2>
+        <IonItem>
+          <IonLabel position="floating">Fecha del Traslado</IonLabel>
+          <IonDatetime
+            presentation="date"
+            value={formData.transferDate}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel position="floating">Lugar de Origen</IonLabel>
+          <IonInput
+            name="originPlace"
+            type="text"
+            value={formData.originPlace}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel position="floating">Lugar de Destino</IonLabel>
+          <IonInput
+            name="destinationPlace"
+            type="text"
+            value={formData.destinationPlace}
+            onIonChange={handleInputChange}
+          />
+        </IonItem>
+        <IonItem>
+          <IonLabel>Razón del Traslado</IonLabel>
+          <IonSelect
+            name="transferReason"
+            value={formData.transferReason}
+            onIonChange={handleInputChange}
+          >
+            <IonSelectOption value="Emergency">Emergencia</IonSelectOption>
+            <IonSelectOption value="Specialized Consultation">Consulta Especializada</IonSelectOption>
+            <IonSelectOption value="Referral">Remisión</IonSelectOption>
+            <IonSelectOption value="Others">Otras</IonSelectOption>
+          </IonSelect>
+        </IonItem>
+
+        <IonButton expand="block" onClick={navigateToPrev}>
+          Atrás
+        </IonButton>
+        <IonButton expand="block" onClick={navigateToNext}>
+          Siguiente
+        </IonButton>
+      </IonContent>
+    </IonPage>
+  );
+};
+
+export default TransferDetails;
+File: ./routes/AppRoutes.tsx
+import React from "react";
+import { Route, Redirect, RouteProps } from "react-router-dom";
+import Tab1 from "../pages/Tab1";
+import Tab2 from "../pages/Tab2";
+import Tab3 from "../pages/Tab3";
+import Login from "../pages/Login";
+import RegisterPatient from "../pages/RegisterPatient";
+import { AuthService } from "../../application/services/AuthService";
+import MapPage from '../pages/MapPage';
+
+interface PrivateRouteProps extends RouteProps {
+  component: React.ComponentType<any>;
+}
+
+const PrivateRoute: React.FC<PrivateRouteProps> = ({
+  component: Component,
+  ...rest
+}) => (
+  <Route
+    {...rest}
+    render={(props) =>
+      AuthService.isLoggedIn() ? (
+        <Component {...props} />
+      ) : (
+        <Redirect to="/login" />
+      )
+    }
+  />
+);
+
+const AppRoutes: React.FC = () => (
+  <>
+    {/* Rutas Públicas */}
+    <Route path="/login" component={Login} exact={true} />
+
+    {/* Ruta para registrar un paciente */}
+    <PrivateRoute
+      path="/register-patient"
+      component={RegisterPatient}
+      exact={true}
+    />
+
+    {/* Rutas Privadas */}
+    <PrivateRoute path="/tab1" component={Tab1} exact={true} />
+    <PrivateRoute path="/tab2" component={Tab2} exact={true} />
+    <PrivateRoute path="/tab3" component={Tab3} exact={true} />
+    
+{/* Ruta pública para el mapa (puedes cambiarla a privada si es necesario) */}
+<Route path="/map" component={MapPage} exact={true} />
+
+{/* Redirección por defecto */}
+    <Route
+      path="/"
+      exact={true}
+      render={() =>
+        AuthService.isLoggedIn() ? (
+          <Redirect to="/register-patient" />
+        ) : (
+          <Redirect to="/login" />
+        )
+      }
+    />
+  </>
+);
+
+export default AppRoutes;
+File: ./routes/PrivateRoute.tsx
+import React from 'react';
+import { Route, Redirect, RouteProps } from 'react-router-dom';
+import { AuthService } from '../../application/services/AuthService';
+
+interface PrivateRouteProps extends RouteProps {
+  component: React.ComponentType<any>;
+}
+
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ component: Component, ...rest }) => (
+  <Route
+    {...rest}
+    render={(props) =>
+      AuthService.isLoggedIn() ? <Component {...props} /> : <Redirect to="/login" />
+    }
+  />
+);
+
+export default PrivateRoute;
