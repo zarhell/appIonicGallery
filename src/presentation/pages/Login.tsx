@@ -11,7 +11,7 @@ const Login: React.FC = () => {
 
   const handleLogin = () => {
     if (AuthService.login(username, password)) {
-      history.push('/register-patient');
+      history.push('/main');  // Redirect to Main Page after login
     } else {
       setShowToast(true);
     }

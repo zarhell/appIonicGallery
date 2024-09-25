@@ -1,35 +1,52 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
 import RegisterPatient from '../pages/RegisterPatient';
+import RegisteredPatients from '../pages/RegisteredPatients';
+import MainPage from '../pages/MainPage';
 import Login from '../pages/Login';
 import MapPage from '../pages/MapPage';
 import { AuthService } from '../../application/services/AuthService';
+import { LocalPhotoRepository } from '../../infrastructure/api/LocalPhotoRepository';
 
 const AppRoutes: React.FC = () => (
   <>
-    {/* Rutas Públicas */}
-    <Route path="/login" component={Login} exact={true} />
-    <Route path="/map" component={MapPage} exact={true} />
+    {/* Default route: Redirect to login if not authenticated */}
+    <Route path="/" exact render={() => <Redirect to="/login" />} />
 
-    {/* Ruta Privada */}
+    {/* Login Route */}
+    <Route path="/login" exact component={Login} />
+
+    {/* Main Page */}
     <Route
-      path="/register-patient"
-      component={AuthService.isLoggedIn() ? RegisterPatient : Login}
-      exact={true}
+      path="/main"
+      render={(props) =>
+        AuthService.isLoggedIn() ? <MainPage /> : <Redirect to="/login" />
+      }
+      exact
     />
 
-    {/* Redirección por defecto */}
+    {/* Registrar Paciente */}
     <Route
-      path="/"
-      exact={true}
-      render={() =>
+      path="/register-patient"
+      render={(props) =>
         AuthService.isLoggedIn() ? (
-          <Redirect to="/register-patient" />
+          <RegisterPatient {...props} photoRepository={new LocalPhotoRepository()} />
         ) : (
           <Redirect to="/login" />
         )
       }
+      exact
     />
+
+    {/* Pacientes Registrados */}
+    <Route
+      path="/registered-patients"
+      component={AuthService.isLoggedIn() ? RegisteredPatients : MainPage}
+      exact
+    />
+
+    {/* Map Page */}
+    <Route path="/map" component={MapPage} exact />
   </>
 );
 
