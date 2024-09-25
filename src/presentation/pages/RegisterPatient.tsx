@@ -80,7 +80,7 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
     alert('Paciente guardado exitosamente');
   };
   const handleOpenMap = () => {
-    history.push('/map'); // Redirigir a la página MapPage
+    history.push('/map');
   };
 
   return (

@@ -13,7 +13,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ photos }) => {
         {photos.map((photo, index) => (
           <IonCol size="6" key={index}>
             <IonImg src={photo.webviewPath} />
-          </IonCol
+          </IonCol>
         ))}
       </IonRow>
     </IonGrid>

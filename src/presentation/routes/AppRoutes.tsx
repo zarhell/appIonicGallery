@@ -1,23 +1,21 @@
-import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import React from "react";
+import { Route, Redirect } from "react-router-dom";
 
-import RegisterPatient from '../pages/RegisterPatient';
-import RegisteredPatients from '../pages/RegisteredPatients';
-import MainPage from '../pages/MainPage';
-import Login from '../pages/Login';
-import MapPage from '../pages/MapPage';
-import { AuthService } from '../../application/services/AuthService';
-import { LocalPhotoRepository } from '../../infrastructure/api/LocalPhotoRepository';
+import RegisterPatient from "../pages/RegisterPatient";
+import RegisteredPatients from "../pages/RegisteredPatients";
+import MainPage from "../pages/MainPage";
+import Login from "../pages/Login";
+import MapPage from "../pages/MapPage";
+import { AuthService } from "../../application/services/AuthService";
+import { LocalPhotoRepository } from "../../infrastructure/api/LocalPhotoRepository";
+import PatientDataForm from "../pages/PatientDataForm";
+import PhotoRegistration from "../pages/PhotoRegistration";
+import LocationPage from "../pages/LocationPage";
 
 const AppRoutes: React.FC = () => (
   <>
-    {/* Default route: Redirect to login if not authenticated */}
     <Route path="/" exact render={() => <Redirect to="/login" />} />
-
-    {/* Login Route */}
     <Route path="/login" exact component={Login} />
-
-    {/* Main Page */}
     <Route
       path="/main"
       render={(props) =>
@@ -25,28 +23,32 @@ const AppRoutes: React.FC = () => (
       }
       exact
     />
-
-    {/* Registrar Paciente */}
     <Route
       path="/register-patient"
       render={(props) =>
         AuthService.isLoggedIn() ? (
-          <RegisterPatient {...props} photoRepository={new LocalPhotoRepository()} />
+          <RegisterPatient
+            {...props}
+            photoRepository={new LocalPhotoRepository()}
+          />
         ) : (
           <Redirect to="/login" />
         )
       }
       exact
     />
+    
+    <Route path="/patient-data" exact component={PatientDataForm} />
+    <Route path="/photo-registration" exact component={PhotoRegistration} />
+    <Route path="/location" exact component={LocationPage} />
+    <Redirect from="/" to="/patient-data" exact />
 
-    {/* Pacientes Registrados */}
     <Route
       path="/registered-patients"
       component={AuthService.isLoggedIn() ? RegisteredPatients : MainPage}
       exact
     />
 
-    {/* Map Page */}
     <Route path="/map" component={MapPage} exact />
     <Route path="/" exact render={() => <Redirect to="/login" />} />
   </>

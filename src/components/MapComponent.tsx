@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css'; // Importamos los estilos de Leaflet
+import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { GeolocationService, Location } from '../application/services/GeolocationService';
 
@@ -60,6 +60,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ onLocationSelect }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       <MapClickHandler />
+      {initialLocation && <Marker position={[initialLocation.latitude, initialLocation.longitude]} />}
     </MapContainer>
   );
 };
