@@ -3,6 +3,7 @@ import { IonButton, IonContent, IonInput, IonPage, IonTitle, IonToolbar, IonHead
 import { LocalPhotoRepository } from '../../infrastructure/api/LocalPhotoRepository';
 import { Photo } from '../../domain/entities/Photo';
 import { LocalStorageService } from '../../application/services/LocalStorageService';
+import { takePhoto } from '../../application/services/PhotoService';
 
 interface RegisterPatientProps {
   photoRepository: LocalPhotoRepository;
@@ -26,11 +27,13 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
   }, []);
 
   const handleTakePhoto = async () => {
-    const newPhoto = await photoRepository.save({
-      filepath: 'photo-path',
-      webviewPath: 'webview-path',
-    });
-    setPhotos([...photos, newPhoto]);
+    try {
+      const newPhoto = await takePhoto();
+      const savedPhoto = await photoRepository.save(newPhoto);
+      setPhotos([...photos, savedPhoto]);
+    } catch (error) {
+      console.error('Error taking photo:', error);
+    }
   };
 
   const handleSubmit = async () => {
