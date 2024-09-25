@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { IonButton, IonContent, IonPage, IonTitle, IonToolbar, IonHeader, IonGrid, IonRow, IonCol, IonImg } from '@ionic/react';
+import { IonButton, IonContent, IonPage, IonTitle, IonToolbar, IonGrid, IonRow, IonCol, IonImg, IonHeader } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { takePhoto } from '../../application/services/PhotoService';
 import { Photo } from '../../domain/entities/Photo';
-import { LocalStorageService } from '../../application/services/LocalStorageService';
+import { LocalPhotoRepository } from '../../infrastructure/api/LocalPhotoRepository';
 
 const PhotoRegistration: React.FC = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const photoRepository = new LocalPhotoRepository();
   const history = useHistory();
   const locationState = useLocation<{ patientId: string }>();
 
@@ -15,7 +16,7 @@ const PhotoRegistration: React.FC = () => {
   }, []);
 
   const loadPhotos = async () => {
-    const savedPhotos = await LocalStorageService.getData(`photos_${locationState.state.patientId}`);
+    const savedPhotos = await photoRepository.getAll();
     if (savedPhotos) {
       setPhotos(savedPhotos);
     }
@@ -25,7 +26,7 @@ const PhotoRegistration: React.FC = () => {
     const newPhoto = await takePhoto();
     const updatedPhotos = [...photos, newPhoto];
     setPhotos(updatedPhotos);
-    await LocalStorageService.saveData(`photos_${locationState.state.patientId}`, updatedPhotos);
+    await photoRepository.save(newPhoto);
   };
 
   const handleConfirmPhotos = () => {

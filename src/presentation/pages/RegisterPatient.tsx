@@ -1,33 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButton,
-  IonMenuButton,
-  IonBackButton,
-  IonButtons,
-  IonLabel,
-  IonInput,
-  IonItem
-} from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonLabel, IonInput, IonItem } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { LocalStorageService } from '../../application/services/LocalStorageService';
-import { Photo } from '../../domain/entities/Photo'; 
-
-interface FormData {
-  fullName: string;
-  idNumber: string;
-  age: string;
-  gender: string;
-  location: { latitude: number; longitude: number } | null;
-  photos: Photo[];
-}
+import { LocalPatientRepository } from '../../infrastructure/api/LocalPatientRepository';
+import { Patient } from '../../domain/entities/Patient';
 
 const RegisterPatient: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<Patient>({
+    id: '', 
     fullName: '', 
     idNumber: '', 
     age: '', 
@@ -35,9 +14,9 @@ const RegisterPatient: React.FC = () => {
     location: null, 
     photos: []
   });
-
+  const patientRepository = new LocalPatientRepository();
   const history = useHistory();
-  const locationState = useLocation<{ photos?: Photo[], location?: { latitude: number, longitude: number } }>();
+  const locationState = useLocation<{ photos?: string[], location?: { latitude: number, longitude: number } }>();
 
   useEffect(() => {
     loadFormData();
@@ -58,14 +37,15 @@ const RegisterPatient: React.FC = () => {
   }, [locationState]);
 
   const loadFormData = async () => {
-    const savedData = await LocalStorageService.getData('patientForm');
+    const savedData = await patientRepository.getAll();
     if (savedData) {
-      setFormData(savedData);
+      setFormData(savedData[0] || formData); // Load the first patient's data or use the initial state
     }
   };
 
   const handleSubmit = async () => {
-    await LocalStorageService.saveData('patientForm', formData);
+    formData.id = new Date().toISOString(); // Assign a unique ID for the patient
+    await patientRepository.save(formData);
     console.log('Patient data submitted:', formData);
   };
 
@@ -93,13 +73,13 @@ const RegisterPatient: React.FC = () => {
         </IonItem>
         <IonButton 
           expand="block" 
-          onClick={() => history.push('/photo-registration', { patientId: 'some-id' })}
+          onClick={() => history.push('/photo-registration', { patientId: formData.id })}
         >
           Registrar Fotos
         </IonButton>
         <IonButton 
           expand="block" 
-          onClick={() => history.push('/map', { patientId: 'some-id' })}
+          onClick={() => history.push('/map', { patientId: formData.id })}
         >
           Seleccionar Ubicación
         </IonButton>
@@ -111,6 +91,5 @@ const RegisterPatient: React.FC = () => {
     </IonPage>
   );
 };
-
 
 export default RegisterPatient;

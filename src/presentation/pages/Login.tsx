@@ -14,7 +14,7 @@ const Login: React.FC = () => {
   const handleLogin = () => {
     if (AuthService.login(username, password)) {
       history.push('/register-patient');
-    } else {
+    } else {<input class="native-input sc-ion-input-md" id="ion-input-1" autocapitalize="off" autocomplete="off" autocorrect="off" name="ion-input-1" placeholder="Password" spellcheck="false" type="password"></input>
       setShowToast(true);
     }
   };

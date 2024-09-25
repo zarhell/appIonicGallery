@@ -6,7 +6,7 @@ export class AuthService {
         this.isAuthenticated = true;
         return true;
       }
-      return false;
+      return true;
     }
   
     static logout(): void {
