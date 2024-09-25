@@ -1,29 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-interface Location {
-  latitude: number;
-  longitude: number;
-}
+import MapComponent from '../../components/MapComponent';
+import { Location } from '../../application/services/GeolocationService';
+import { LocalStorageService } from '../../application/services/LocalStorageService'; // Importa el servicio de almacenamiento
 
 const MapPage: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [initialLocation, setInitialLocation] = useState<Location>({ latitude: 51.505, longitude: -0.09 });
+  const initialLocation: Location = { latitude: 4.62433, longitude: -74.063644 };
 
-  const MapClickHandler = () => {
-    useMapEvents({
-      click(e) {
-        const location = {
-          latitude: e.latlng.lat,
-          longitude: e.latlng.lng,
-        };
-        setSelectedLocation(location);
-      },
-    });
-    return selectedLocation ? <Marker position={[selectedLocation.latitude, selectedLocation.longitude]}></Marker> : null;
+  const handleLocationSelect = (location: Location) => {
+    setSelectedLocation(location);
+  };
+
+  const handleConfirmLocation = async () => {
+    if (selectedLocation) {
+      console.log('Ubicación seleccionada:', selectedLocation);
+    
+      await LocalStorageService.saveData('selectedLocation', selectedLocation);
+      alert('Ubicación guardada con éxito');
+    } else {
+      alert('No se ha seleccionado ninguna ubicación');
+    }
   };
 
   return (
@@ -34,14 +31,8 @@ const MapPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <MapContainer center={[initialLocation.latitude, initialLocation.longitude]} zoom={13} style={{ height: '400px', width: '100%' }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <MapClickHandler />
-        </MapContainer>
-        <IonButton expand="block">
+        <MapComponent initialLocation={initialLocation} onLocationSelect={handleLocationSelect} />
+        <IonButton expand="block" onClick={handleConfirmLocation}>
           Confirmar Ubicación
         </IonButton>
       </IonContent>

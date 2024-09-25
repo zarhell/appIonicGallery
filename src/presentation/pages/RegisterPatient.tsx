@@ -4,16 +4,27 @@ import { LocalPhotoRepository } from '../../infrastructure/api/LocalPhotoReposit
 import { Photo } from '../../domain/entities/Photo';
 import { LocalStorageService } from '../../application/services/LocalStorageService';
 import { takePhoto } from '../../application/services/PhotoService';
+import { useHistory, useLocation } from 'react-router-dom';
 
 interface RegisterPatientProps {
   photoRepository: LocalPhotoRepository;
+}
+
+interface LocationState {
+  selectedLocation?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) => {
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
+  const history = useHistory();
+  const locationState = useLocation<LocationState>();
   useEffect(() => {
     const loadFormData = async () => {
       const savedData = await LocalStorageService.getData('patientForm');
@@ -21,10 +32,14 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
         setName(savedData.name || '');
         setAge(savedData.age || '');
         setPhotos(savedData.photos || []);
+        setLocation(savedData.location || null);
+      }
+      if (locationState.state?.selectedLocation) {
+        setLocation(locationState.state.selectedLocation);
       }
     };
     loadFormData();
-  }, []);
+  }, [locationState]);
 
   const handleTakePhoto = async () => {
     try {
@@ -43,6 +58,10 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
       photos,
     };
     await LocalStorageService.saveData('patientForm', formData);
+    alert('Paciente guardado exitosamente');
+  };
+  const handleOpenMap = () => {
+    history.push('/map'); // Redirigir a la página MapPage
   };
 
   return (
@@ -50,7 +69,7 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/main" /> {/* Back button to main page */}
+            <IonBackButton defaultHref="/main" />
           </IonButtons>
           <IonTitle>Registrar Paciente</IonTitle>
         </IonToolbar>
@@ -88,6 +107,21 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
             ))}
           </IonRow>
         </IonGrid>
+        {/* Botón para abrir el mapa y seleccionar ubicación */}
+        <IonButton expand="block" onClick={handleOpenMap}>
+          Seleccionar Ubicación en el Mapa
+        </IonButton>
+
+        {/* Mostrar la ubicación seleccionada */}
+        {location && (
+          <IonItem>
+            <IonLabel>
+              Ubicación seleccionada: Latitud {location.latitude}, Longitud {location.longitude}
+            </IonLabel>
+          </IonItem>
+        )}
+
+        {/* Botón para enviar el formulario */}
 
         <IonButton expand="block" onClick={handleSubmit}>
           Enviar

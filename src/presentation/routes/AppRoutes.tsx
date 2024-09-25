@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
+
 import RegisterPatient from '../pages/RegisterPatient';
 import RegisteredPatients from '../pages/RegisteredPatients';
 import MainPage from '../pages/MainPage';
@@ -47,6 +48,7 @@ const AppRoutes: React.FC = () => (
 
     {/* Map Page */}
     <Route path="/map" component={MapPage} exact />
+    <Route path="/" exact render={() => <Redirect to="/login" />} />
   </>
 );
 
