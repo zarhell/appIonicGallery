@@ -5,6 +5,7 @@ import { Photo } from '../../domain/entities/Photo';
 import { LocalStorageService } from '../../application/services/LocalStorageService';
 import { takePhoto } from '../../application/services/PhotoService';
 import { useHistory, useLocation } from 'react-router-dom';
+import { ReverseGeocodeService } from '../../application/services/ReverseGeocodeService';
 
 interface RegisterPatientProps {
   photoRepository: LocalPhotoRepository;
@@ -22,6 +23,9 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
   const [age, setAge] = useState('');
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
+  const [address, setAddress] = useState<string | null>(null);
 
   const history = useHistory();
   const locationState = useLocation<LocationState>();
@@ -35,11 +39,24 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
         setLocation(savedData.location || null);
       }
       if (locationState.state?.selectedLocation) {
-        setLocation(locationState.state.selectedLocation);
+        const { latitude, longitude } = locationState.state.selectedLocation;
+        setLatitude(latitude);
+        setLongitude(longitude);
       }
     };
     loadFormData();
   }, [locationState]);
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (latitude && longitude) {
+        const reverseGeocodeService = new ReverseGeocodeService();
+        const foundAddress = await reverseGeocodeService.getAddressFromCoordinates(latitude, longitude);
+        setAddress(foundAddress);
+      }
+    };
+    fetchAddress();
+  }, [latitude, longitude]);
 
   const handleTakePhoto = async () => {
     try {
@@ -50,12 +67,14 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
       console.error('Error taking photo:', error);
     }
   };
+  
 
   const handleSubmit = async () => {
     const formData = {
       name,
       age,
       photos,
+      location: { latitude, longitude }
     };
     await LocalStorageService.saveData('patientForm', formData);
     alert('Paciente guardado exitosamente');
@@ -107,25 +126,23 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
             ))}
           </IonRow>
         </IonGrid>
-        {/* Botón para abrir el mapa y seleccionar ubicación */}
+        
         <IonButton expand="block" onClick={handleOpenMap}>
           Seleccionar Ubicación en el Mapa
         </IonButton>
-
-        {/* Mostrar la ubicación seleccionada */}
-        {location && (
+        
+        {address && (
           <IonItem>
-            <IonLabel>
-              Ubicación seleccionada: Latitud {location.latitude}, Longitud {location.longitude}
-            </IonLabel>
+            <IonLabel>Dirección: {address}</IonLabel>
           </IonItem>
         )}
+        
 
-        {/* Botón para enviar el formulario */}
 
         <IonButton expand="block" onClick={handleSubmit}>
           Enviar
         </IonButton>
+        
       </IonContent>
     </IonPage>
   );
