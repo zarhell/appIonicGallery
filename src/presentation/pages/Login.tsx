@@ -9,10 +9,19 @@ const Login: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const history = useHistory();
 
-  const handleLogin = () => {
-    if (AuthService.login(username, password)) {
-      history.push('/main');  // Redirect to Main Page after login
+
+  const handleLogin = async () => {
+    try {
+      const isLoggedIn = await AuthService.login(username, password);
+
+      if (isLoggedIn) {
+        localStorage.setItem('isAuthenticated', 'true');
+        history.push('/main');
     } else {
+        setShowToast(true);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
       setShowToast(true);
     }
   };

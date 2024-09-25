@@ -12,6 +12,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@capacitor-community/sqlite": "^6.0.2",
     "@capacitor/android": "6.1.2",
     "@capacitor/app": "^6.0.1",
     "@capacitor/camera": "^6.0.2",
@@ -27,6 +28,7 @@
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
     "appIonicGallery": "file:",
+    "firebase": "^10.13.2",
     "ionicons": "^7.0.0",
     "leaflet": "^1.9.4",
     "react": "^18.2.0",
