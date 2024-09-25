@@ -2,15 +2,19 @@ import React, { useState } from 'react';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/react';
 import MapComponent from '../../components/MapComponent';
 import { Location } from '../../application/services/GeolocationService';
-import { LocalStorageService } from '../../application/services/LocalStorageService'; // Importa el servicio de almacenamiento
+import { LocalStorageService } from '../../application/services/LocalStorageService';
+import { useHistory } from 'react-router-dom';
 
 const MapPage: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const initialLocation: Location = { latitude: 4.62433, longitude: -74.063644 };
+  const history = useHistory();
 
   const handleLocationSelect = (location: Location) => {
+
     setSelectedLocation(location);
   };
+
 
   const handleConfirmLocation = async () => {
     if (selectedLocation) {
@@ -18,6 +22,10 @@ const MapPage: React.FC = () => {
     
       await LocalStorageService.saveData('selectedLocation', selectedLocation);
       alert('Ubicación guardada con éxito');
+      history.push({
+        pathname: '/register-patient',
+        state: { selectedLocation },
+      });
     } else {
       alert('No se ha seleccionado ninguna ubicación');
     }
@@ -32,7 +40,7 @@ const MapPage: React.FC = () => {
       </IonHeader>
       <IonContent>
         <MapComponent initialLocation={initialLocation} onLocationSelect={handleLocationSelect} />
-        <IonButton expand="block" onClick={handleConfirmLocation}>
+        <IonButton expand="block" onClick={handleConfirmLocation} disabled={!selectedLocation}>
           Confirmar Ubicación
         </IonButton>
       </IonContent>
