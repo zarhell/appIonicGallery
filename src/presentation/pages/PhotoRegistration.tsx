@@ -1,50 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { IonButton, IonContent, IonPage, IonTitle, IonToolbar, IonGrid, IonRow, IonCol, IonImg, IonHeader } from '@ionic/react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonGrid, IonRow, IonCol, IonImg, IonBackButton, IonButtons } from '@ionic/react';
 import { takePhoto } from '../../application/services/PhotoService';
-import { Photo } from '../../domain/entities/Photo';
 import { LocalPhotoRepository } from '../../infrastructure/api/LocalPhotoRepository';
+import { useHistory } from 'react-router-dom';
+import { LocalStorageService } from '../../application/services/LocalStorageService';
 
 const PhotoRegistration: React.FC = () => {
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const photoRepository = new LocalPhotoRepository();
+  const [photos, setPhotos] = useState<any[]>([]);
   const history = useHistory();
-  const locationState = useLocation<{ patientId: string }>();
+  const photoRepository = new LocalPhotoRepository();
 
   useEffect(() => {
+    const loadPhotos = async () => {
+      const savedData = await LocalStorageService.getData('patientForm');
+      if (savedData) {
+        setPhotos(savedData.photos || []);
+      }
+    };
     loadPhotos();
   }, []);
 
-  const loadPhotos = async () => {
-    const savedPhotos = await photoRepository.getAll();
-    if (savedPhotos) {
-      setPhotos(savedPhotos);
+  const handleTakePhoto = async () => {
+    try {
+      const newPhoto = await takePhoto();
+      const savedPhoto = await photoRepository.save(newPhoto);
+      setPhotos([...photos, savedPhoto]);
+    } catch (error) {
+      console.error('Error taking photo:', error);
     }
   };
 
-  const handleTakePhoto = async () => {
-    const newPhoto = await takePhoto();
-    const updatedPhotos = [...photos, newPhoto];
-    setPhotos(updatedPhotos);
-    await photoRepository.save(newPhoto);
-  };
-
-  const handleConfirmPhotos = () => {
-    history.push('/register-patient', { photos });
+  const handleNext = async () => {
+    const formData = await LocalStorageService.getData('patientForm');
+    await LocalStorageService.saveData('patientForm', { ...formData, photos });
+    history.push('/location');
   };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Registrar Fotos</IonTitle>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/patient-data" />
+          </IonButtons>
+          <IonTitle>Registro Fotográfico</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <IonButton expand="block" onClick={handleTakePhoto}>
-          Tomar Foto
-        </IonButton>
-
+        <IonButton expand="block" onClick={handleTakePhoto}>Tomar Foto</IonButton>
         <IonGrid>
           <IonRow>
             {photos.map((photo, index) => (
@@ -54,10 +57,7 @@ const PhotoRegistration: React.FC = () => {
             ))}
           </IonRow>
         </IonGrid>
-
-        <IonButton expand="block" onClick={handleConfirmPhotos}>
-          Confirmar Fotos
-        </IonButton>
+        <IonButton expand="block" onClick={handleNext}>Siguiente</IonButton>
       </IonContent>
     </IonPage>
   );

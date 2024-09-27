@@ -5,8 +5,12 @@ export interface Location {
   longitude: number;
 }
 
-export class GeolocationService {
-  static async getCurrentLocation(): Promise<Location | null> {
+export interface IGeolocationService {
+  getCurrentLocation(): Promise<Location | null>;
+}
+
+export class GeolocationService implements IGeolocationService {
+  async getCurrentLocation(): Promise<Location | null> {
     try {
       const position = await Geolocation.getCurrentPosition();
       return {

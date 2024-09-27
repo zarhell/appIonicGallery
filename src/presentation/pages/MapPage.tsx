@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton } from '@ionic/react';
+import L from 'leaflet';
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
 interface Location {
   latitude: number;
   longitude: number;
 }
 
-const MapPage: React.FC = () => {
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [initialLocation, setInitialLocation] = useState<Location | null>(null);
-  const history = useHistory();
-  const locationState = useLocation<{ gpsLocation: Location } | undefined>();
+interface MapPageProps {
+  onLocationSelect: (location: Location) => void;
+}
 
-  useEffect(() => {
-    if (locationState?.state?.gpsLocation) {
-      setInitialLocation(locationState.state.gpsLocation);
-    } else {
-      setInitialLocation({
-        latitude: 51.505,
-        longitude: -0.09,
-      });
-    }
-  }, [locationState]);
+const MapPage: React.FC<MapPageProps> = ({ onLocationSelect }) => {
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const initialLocation: Location = { latitude: 51.505, longitude: -0.09 };
 
   const MapClickHandler = () => {
     useMapEvents({
@@ -41,40 +37,21 @@ const MapPage: React.FC = () => {
 
   const handleConfirmLocation = () => {
     if (selectedLocation) {
-      history.push('/register-patient', { location: selectedLocation });
-    } else if (initialLocation) {
-      history.push('/register-patient', { location: initialLocation });
+      onLocationSelect(selectedLocation);
     }
   };
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Seleccionar Ubicación en el Mapa</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent>
-        {initialLocation && (
-          <MapContainer center={[initialLocation.latitude, initialLocation.longitude]} zoom={13} style={{ height: '400px', width: '100%' }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <MapClickHandler />
-        </MapContainer>
-        )}
-        {selectedLocation || initialLocation ? (
-          <IonButton expand="block" onClick={handleConfirmLocation}>
-            Confirmar Ubicación
-          </IonButton>
-        ) : (
-          <IonButton expand="block" disabled>
-            Confirmar Ubicación
-          </IonButton>
-        )}
-      </IonContent>
-    </IonPage>
+    <div>
+      <MapContainer center={[initialLocation.latitude, initialLocation.longitude]} zoom={13} style={{ height: '400px', width: '100%' }}>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <MapClickHandler />
+      </MapContainer>
+      <button onClick={handleConfirmLocation}>Confirmar Ubicación</button>
+    </div>
   );
 };
 

@@ -1,58 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonLabel, IonInput, IonItem } from '@ionic/react';
-import { useHistory, useLocation } from 'react-router-dom';
-import { LocalPatientRepository } from '../../infrastructure/api/LocalPatientRepository';
-import { Patient } from '../../domain/entities/Patient';
+import { IonButton, IonContent, IonInput, IonPage, IonTitle, IonToolbar, IonHeader, IonItem, IonLabel, IonImg, IonGrid, IonRow, IonCol, IonButtons, IonBackButton } from '@ionic/react';
+import { LocalPhotoRepository } from '../../infrastructure/api/LocalPhotoRepository';
+import { Photo } from '../../domain/entities/Photo';
+import { LocalStorageService } from '../../application/services/LocalStorageService';
+import { takePhoto } from '../../application/services/PhotoService';
 
-const RegisterPatient: React.FC = () => {
-  const [formData, setFormData] = useState<Patient>({
-    id: '', 
-    fullName: '', 
-    idNumber: '', 
-    age: '', 
-    gender: '', 
-    location: null, 
-    photos: []
-  });
-  const patientRepository = new LocalPatientRepository();
-  const history = useHistory();
-  const locationState = useLocation<{ photos?: string[], location?: { latitude: number, longitude: number } }>();
+interface RegisterPatientProps {
+  photoRepository: LocalPhotoRepository;
+}
+
+const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) => {
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   useEffect(() => {
+    const loadFormData = async () => {
+      const savedData = await LocalStorageService.getData('patientForm');
+      if (savedData) {
+        setName(savedData.name || '');
+        setAge(savedData.age || '');
+        setPhotos(savedData.photos || []);
+      }
+    };
     loadFormData();
-    
-    if (locationState.state?.photos) {
-      setFormData((prevData) => ({
-        ...prevData, 
-        photos: locationState.state.photos || []
-      }));
-    }
+  }, []);
 
-    if (locationState.state?.location) {
-      setFormData((prevData) => ({
-        ...prevData, 
-        location: locationState.state.location || null
-      }));
-    }
-  }, [locationState]);
-
-  const loadFormData = async () => {
-    const savedData = await patientRepository.getAll();
-    if (savedData) {
-      setFormData(savedData[0] || formData); // Load the first patient's data or use the initial state
+  const handleTakePhoto = async () => {
+    try {
+      const newPhoto = await takePhoto();
+      const savedPhoto = await photoRepository.save(newPhoto);
+      setPhotos([...photos, savedPhoto]);
+    } catch (error) {
+      console.error('Error taking photo:', error);
     }
   };
-
+  
   const handleSubmit = async () => {
-    formData.id = new Date().toISOString(); // Assign a unique ID for the patient
-    await patientRepository.save(formData);
-    console.log('Patient data submitted:', formData);
+    const formData = {
+      name,
+      age,
+      photos,
+    };
+    await LocalStorageService.saveData('patientForm', formData);
+    alert('Paciente guardado exitosamente');
   };
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/main" />
+          </IonButtons>
           <IonTitle>Registrar Paciente</IonTitle>
         </IonToolbar>
       </IonHeader>
@@ -71,22 +71,25 @@ const RegisterPatient: React.FC = () => {
             onIonChange={(e: CustomEvent) => setFormData({ ...formData, idNumber: e.detail.value! })} 
           />
         </IonItem>
-        <IonButton 
-          expand="block" 
-          onClick={() => history.push('/photo-registration', { patientId: formData.id })}
-        >
-          Registrar Fotos
-        </IonButton>
-        <IonButton 
-          expand="block" 
-          onClick={() => history.push('/map', { patientId: formData.id })}
-        >
-          Seleccionar Ubicación
+
+        <IonButton expand="block" onClick={handleTakePhoto}>
+          Tomar Foto
         </IonButton>
 
+        <IonGrid>
+          <IonRow>
+            {photos.map((photo, index) => (
+              <IonCol size="6" key={index}>
+                <IonImg src={photo.webviewPath} />
+              </IonCol>
+            ))}
+          </IonRow>
+        </IonGrid>
+        
         <IonButton expand="block" onClick={handleSubmit}>
           Enviar Registro
         </IonButton>
+        
       </IonContent>
     </IonPage>
   );

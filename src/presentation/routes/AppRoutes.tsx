@@ -1,20 +1,30 @@
-import React from 'react';
-import { Route } from 'react-router-dom';
-import RegisterPatient from '../pages/RegisterPatient';
-import MapPage from '../pages/MapPage';
+import React from "react";
+import { Route, Redirect } from "react-router-dom";
+import MainPage from "../pages/MainPage";
+import Login from "../pages/Login";
+import MapPage from "../pages/MapPage";
+import { AuthService } from "../../application/services/AuthService";
+import RegisteredPatients from "../pages/RegisteredPatients";
+import PatientDataForm from "../pages/PatientDataForm";
 
 const AppRoutes: React.FC = () => (
   <>
-    {/* Rutas Públicas */}
-    {/* <Route path="/login" component={Login} exact={true} /> */}
-
-    {/* Rutas Principales */}
-    <Route path="/" exact={true} component={RegisterPatient} />
-    <Route path="/register-patient" component={RegisterPatient} exact={true} />
-    <Route path="/map" component={MapPage} exact={true} />
-
-    {/* Redirección por defecto */}
-    <Route path="/" exact={true} component={RegisterPatient} />
+    <Route path="/" exact render={() => <Redirect to="/login" />} />
+    <Route path="/login" exact component={Login} />
+    <Route
+      path="/main"
+      render={() =>
+        AuthService.isLoggedIn() ? <MainPage /> : <Redirect to="/login" />
+      }
+      exact
+    />
+    <Route
+      path="/register-patient"
+      component={AuthService.isLoggedIn() ? PatientDataForm : Login}
+      exact
+    />
+    <Route path="/registered-patients" exact component={RegisteredPatients} />
+    <Route path="/map" exact component={MapPage} />
   </>
 );
 

@@ -11,10 +11,19 @@ const Login: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const history = useHistory();
 
-  const handleLogin = () => {
-    if (AuthService.login(username, password)) {
-      history.push('/register-patient');
-    } else {<input class="native-input sc-ion-input-md" id="ion-input-1" autocapitalize="off" autocomplete="off" autocorrect="off" name="ion-input-1" placeholder="Password" spellcheck="false" type="password"></input>
+
+  const handleLogin = async () => {
+    try {
+      const isLoggedIn = await AuthService.login(username, password);
+
+      if (isLoggedIn) {
+        localStorage.setItem('isAuthenticated', 'true');
+        history.push('/main');
+    } else {
+        setShowToast(true);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
       setShowToast(true);
     }
   };
