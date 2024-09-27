@@ -1,63 +1,82 @@
 import React, { useState, useEffect } from 'react';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonLabel, IonModal, IonDatetime, IonInput, IonSelect, IonSelectOption } from '@ionic/react';
-import { useHistory, useLocation } from 'react-router-dom';
-import { FormProps, LocationState } from './types';
+import MapPage from '../MapPage'; // Import the Map component as a modal
+import { FormProps } from './types';
 import { ReverseGeocodeService } from '../../../application/services/ReverseGeocodeService';
+import { LocalStorageService } from '../../../application/services/LocalStorageService';
 
 const TransferDetails: React.FC<FormProps> = ({ formData, handleInputChange, navigateToNext, navigateToPrev }) => {
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false); // State to show/hide the map modal
   const [originAddress, setOriginAddress] = useState<string | null>(formData.originPlace);
   const [destinationAddress, setDestinationAddress] = useState<string | null>(formData.destinationPlace);
-  const [latitude, setLatitude] = useState<number>(0);
-  const [longitude, setLongitude] = useState<number>(0);
-  const [loadingAddress, setLoadingAddress] = useState<boolean>(false);
+  const [mapType, setMapType] = useState<string | null>(null); // To handle origin/destination selection
 
-  const history = useHistory();
-  const locationState = useLocation<LocationState>();
-
+  // Load the location saved in localStorage
   useEffect(() => {
-    if (locationState.state?.selectedLocation) {
-      const { latitude, longitude } = locationState.state.selectedLocation;
-      setLatitude(latitude);
-      setLongitude(longitude);
-    }
-  }, [locationState]);
-
-  useEffect(() => {
-    const fetchAddress = async () => {
-      if (latitude && longitude && !loadingAddress) {
-        setLoadingAddress(true); // Para evitar múltiples llamadas
+    const loadSelectedLocation = async () => {
+      const selectedLocation = await LocalStorageService.getData('selectedLocation');
+      if (selectedLocation) {
         const reverseGeocodeService = new ReverseGeocodeService();
-        const foundAddress = await reverseGeocodeService.getAddressFromCoordinates(latitude, longitude);
-        const urlParams = new URLSearchParams(window.location.search);
-        const type = urlParams.get('type');
+        const foundAddress = await reverseGeocodeService.getAddressFromCoordinates(selectedLocation.latitude, selectedLocation.longitude);
 
-        if (type === 'origin') {
-        setOriginAddress(foundAddress);
+        if (mapType === 'origin') {
+          setOriginAddress(foundAddress);
           handleInputChange({ target: { name: 'originPlace', value: foundAddress } });
-        } else if (type === 'destination') {
+        } else if (mapType === 'destination') {
           setDestinationAddress(foundAddress);
           handleInputChange({ target: { name: 'destinationPlace', value: foundAddress } });
         }
-
-        setLoadingAddress(false);
       }
     };
-    fetchAddress();
-  }, [latitude, longitude, handleInputChange, loadingAddress]);
-
-  const handleOpenMapForOrigin = () => {
-    history.push("/map?type=origin");
-  };
-
-  const handleOpenMapForDestination = () => {
-    history.push("/map?type=destination");
-  };
+    loadSelectedLocation();
+  }, [mapType, handleInputChange]);
 
   const handleDateChange = (e: any) => {
     const selectedDate = e.detail.value;
     handleInputChange({ target: { name: "transferDate", value: selectedDate } });
     setShowCalendar(false);
+  };
+
+  const handleManualInputChange = (e: any) => {
+    const { name, value } = e.target;
+    handleInputChange(e);
+
+    if (name === 'originPlace') {
+      setOriginAddress(value);
+    } else if (name === 'destinationPlace') {
+      setDestinationAddress(value);
+    }
+  };
+
+  // Open the map modal and define the type (origin/destination)
+  const openMapForOrigin = () => {
+    setMapType('origin');
+    setShowMapModal(true);
+  };
+
+  const openMapForDestination = () => {
+    setMapType('destination');
+    setShowMapModal(true);
+  };
+
+  // Close the map modal after selecting a location
+  const handleCloseMapModal = (selectedLocation: { latitude: number, longitude: number }) => {
+    setShowMapModal(false); // Close the map modal
+
+    if (selectedLocation) {
+      const reverseGeocodeService = new ReverseGeocodeService();
+      reverseGeocodeService.getAddressFromCoordinates(selectedLocation.latitude, selectedLocation.longitude)
+        .then((foundAddress) => {
+          if (mapType === 'origin') {
+            setOriginAddress(foundAddress);
+            handleInputChange({ target: { name: 'originPlace', value: foundAddress } });
+          } else if (mapType === 'destination') {
+            setDestinationAddress(foundAddress);
+            handleInputChange({ target: { name: 'destinationPlace', value: foundAddress } });
+          }
+        });
+    }
   };
 
   return (
@@ -82,31 +101,29 @@ const TransferDetails: React.FC<FormProps> = ({ formData, handleInputChange, nav
           </IonContent>
         </IonModal>
 
-        <IonButton expand="block" onClick={handleOpenMapForOrigin}>
+        <IonButton expand="block" onClick={openMapForOrigin}>
           Seleccionar Lugar de Origen en el Mapa
         </IonButton>
-          <IonItem>
-          <IonLabel position="floating">Lugar de Origen</IonLabel>
+        <IonItem>
           <IonInput
             name="originPlace"
             value={originAddress || ''}
-            onIonChange={handleInputChange}
             placeholder="Lugar de Origen"
+            onIonChange={handleManualInputChange}
           />
-          </IonItem>
+        </IonItem>
 
-        <IonButton expand="block" onClick={handleOpenMapForDestination}>
+        <IonButton expand="block" onClick={openMapForDestination}>
           Seleccionar Lugar de Destino en el Mapa
         </IonButton>
-          <IonItem>
-          <IonLabel position="floating">Lugar de Destino</IonLabel>
+        <IonItem>
           <IonInput
             name="destinationPlace"
             value={destinationAddress || ''}
-            onIonChange={handleInputChange}
             placeholder="Lugar de Destino"
+            onIonChange={handleManualInputChange}
           />
-          </IonItem>
+        </IonItem>
 
         <IonItem>
           <IonLabel>Razón del Traslado</IonLabel>
@@ -117,12 +134,18 @@ const TransferDetails: React.FC<FormProps> = ({ formData, handleInputChange, nav
             <IonSelectOption value="Others">Otros</IonSelectOption>
           </IonSelect>
         </IonItem>
+
         <IonButton expand="block" onClick={navigateToPrev}>
           Atrás
         </IonButton>
         <IonButton expand="block" onClick={navigateToNext}>
           Siguiente
         </IonButton>
+
+        {/* Modal for showing map */}
+        <IonModal isOpen={showMapModal} onDidDismiss={() => setShowMapModal(false)}>
+          <MapPage onLocationSelect={handleCloseMapModal} /> {/* Pass callback to close modal */}
+        </IonModal>
       </IonContent>
     </IonPage>
   );

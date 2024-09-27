@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import GeneralInfo from './form/GeneralInfo';
 import TransferDetails from './form/TransferDetails';
 import { FormData } from './form/types';
@@ -35,6 +35,7 @@ const PatientDataForm: React.FC = () => {
 
   const [step, setStep] = useState(0);
   const history = useHistory();
+  const location = useLocation<any>();
 
   useEffect(() => {
     const loadFormData = async () => {
@@ -45,6 +46,16 @@ const PatientDataForm: React.FC = () => {
     };
     loadFormData();
   }, []);
+  
+  useEffect(() => {
+    if (location.state?.selectedLocation) {
+      const { latitude, longitude } = location.state.selectedLocation;
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        originPlace: `${latitude}, ${longitude}`,
+      }));
+    }
+  }, [location.state]);
 
   const handleInputChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
@@ -56,7 +67,7 @@ const PatientDataForm: React.FC = () => {
       const savedPhoto = await photoRepository.save(newPhoto);
       setFormData({
         ...formData,
-        photos: [...formData.photos, savedPhoto], // Añadir la nueva foto al estado
+        photos: [...formData.photos, savedPhoto],
       });
     } catch (error) {
       console.error('Error al tomar la foto:', error);
@@ -76,10 +87,10 @@ const PatientDataForm: React.FC = () => {
   const renderStep = () => {
     switch (step) {
       case 0:
-        return ( 
-        <>
-        <GeneralInfo formData={formData} handleInputChange={handleInputChange} navigateToNext={navigateToNext} />;
-        <IonButton expand="block" onClick={handleTakePhoto}>
+        return (
+          <>
+            <GeneralInfo formData={formData} handleInputChange={handleInputChange} navigateToNext={navigateToNext} />
+            <IonButton expand="block" onClick={handleTakePhoto}>
               Tomar Foto
             </IonButton>
             <IonGrid>

@@ -1,12 +1,11 @@
+# **appIonicGallery** - Aplicación de Gestión de Pacientes con Galería de Fotos
 
-# **appIonicGallery** - Aplicación de Galería de Fotos en Ionic React
-
-Este proyecto es una aplicación móvil basada en **Ionic React** que permite a los usuarios capturar fotos usando la cámara del dispositivo y almacenarlas en el sistema de archivos local. El proyecto utiliza **Capacitor** para acceder a la funcionalidad nativa del dispositivo, incluyendo el acceso a la cámara y el almacenamiento de archivos.
+Este proyecto es una aplicación móvil basada en **Ionic React** que permite a los usuarios capturar fotos de pacientes, almacenar los datos de pacientes, gestionar registros clínicos y visualizar la ubicación de los traslados. La aplicación utiliza **Capacitor** para acceder a la funcionalidad nativa del dispositivo, incluyendo el acceso a la cámara, almacenamiento local y geolocalización.
 
 ## **Tabla de Contenidos**
 - [Características](#características)
 - [Estructura del Proyecto](#estructura-del-proyecto)
-- [Descripción de la Arquitectura Limpia](#descripción-de-la-arquitectura-limpia)
+- [Descripción de la Arquitectura](#descripción-de-la-arquitectura)
 - [Instalación](#instalación)
 - [Ejecutar la Aplicación](#ejecutar-la-aplicación)
 - [Probar en el Emulador de Android](#probar-en-el-emulador-de-android)
@@ -15,11 +14,13 @@ Este proyecto es una aplicación móvil basada en **Ionic React** que permite a 
 ---
 
 ## **Características**
-- Captura de fotos usando la cámara del dispositivo.
+- Captura de fotos de pacientes usando la cámara del dispositivo.
 - Almacenamiento de fotos en el sistema de archivos local.
-- Visualización de fotos capturadas en formato de galería.
+- Registro y almacenamiento de datos clínicos de pacientes.
+- Visualización de pacientes registrados.
+- Gestión de ubicaciones de origen y destino usando geolocalización.
 - UI responsiva utilizando componentes de Ionic.
-- Uso de la Arquitectura Limpia para código mantenible y testeable.
+- Uso de la Arquitectura Modular para código mantenible y escalable.
 
 ---
 
@@ -29,42 +30,55 @@ Este proyecto es una aplicación móvil basada en **Ionic React** que permite a 
 appIonicGallery/
 ├── android/                     # Código nativo de la plataforma Android
 ├── src/                         # Código fuente de la aplicación
-│   ├── application/             # Capa de aplicación (casos de uso y servicios)
+│   ├── application/             # Capa de aplicación (configuración, casos de uso y servicios)
+│   │   ├── config/
+│   │   │   └── firebaseConfig.ts  # Configuración de Firebase para persistencia en la nube
 │   │   ├── services/
-│   │   │   └── PhotoService.ts   # Servicio para interactuar con la cámara y el sistema de archivos
+│   │   │   ├── AuthService.ts     # Servicio de autenticación
+│   │   │   ├── FirestoreService.ts# Servicio para manejar datos en Firestore
+│   │   │   ├── GeolocationService.ts  # Servicio para obtener la ubicación del dispositivo
+│   │   │   ├── LocalStorageService.ts # Servicio para gestionar almacenamiento local
+│   │   │   ├── PhotoService.ts    # Servicio para interactuar con la cámara y el sistema de archivos
+│   │   │   └── ReverseGeocodeService.ts # Servicio para convertir coordenadas en direcciones
 │   │   └── use-cases/
 │   │       ├── AddPhotoToGallery.ts  # Caso de uso para añadir una foto a la galería
 │   │       └── GetPhotos.ts          # Caso de uso para obtener todas las fotos guardadas
-│   ├── assets/                 # Activos estáticos (imágenes, íconos)
+│   ├── assets/                      # Activos estáticos (imágenes, íconos)
 │   │   └── images/
-│   ├── components/             # Componentes de UI reutilizables
-│   ├── domain/                 # Capa de dominio (entidades y repositorios)
+│   ├── components/                  # Componentes de UI reutilizables
+│   │   ├── AddPhotoButton.tsx       # Botón flotante para activar la cámara
+│   │   ├── HeaderMenu.tsx           # Componente para gestionar la navegación en la aplicación
+│   │   ├── PhotoGallery.tsx         # Componente de galería para mostrar las fotos
+│   │   └── MapComponent.tsx         # Componente para gestionar la visualización del mapa
+│   ├── domain/                      # Capa de dominio (entidades y repositorios)
 │   │   ├── entities/
-│   │   │   └── Photo.ts         # Definición de la entidad Foto
+│   │   │   └── Photo.ts             # Definición de la entidad Foto
 │   │   └── repositories/
-│   │       └── PhotoRepository.ts  # Interfaz del repositorio para el almacenamiento de fotos
-│   ├── infrastructure/         # Capa de infraestructura (API, implementación del almacenamiento)
+│   │       └── PhotoRepository.ts   # Interfaz del repositorio para el almacenamiento de fotos
+│   ├── infrastructure/              # Capa de infraestructura (API, implementación del almacenamiento)
 │   │   ├── api/
 │   │   └── storage/
 │   │       └── LocalPhotoRepository.ts # Implementación de almacenamiento de fotos utilizando la API de Preferences
-│   ├── presentation/           # Capa de presentación (componentes, páginas, rutas)
+│   ├── presentation/                # Capa de presentación (componentes, páginas, rutas)
 │   │   ├── components/
 │   │   │   └── AddPhotoButton.tsx   # Botón flotante para activar la cámara
 │   │   │   └── PhotoGallery.tsx     # Componente de galería para mostrar las fotos
 │   │   ├── pages/
-│   │   │   └── Tab1.tsx         # Página principal de la galería que integra los componentes
+│   │   │   ├── Login.tsx            # Página de inicio de sesión
+│   │   │   ├── MainPage.tsx         # Página principal con opciones de la aplicación
+│   │   │   ├── RegisterPatient.tsx  # Página para registrar los datos del paciente
+│   │   │   └── RegisteredPatients.tsx # Página para visualizar y gestionar pacientes registrados
 │   │   └── routes/
-│   │       └── AppRoutes.tsx    # Rutas de la aplicación para la navegación
-│   ├── theme/                   # Estilos globales y específicos del tema
+│   │       └── AppRoutes.tsx        # Rutas de la aplicación para la navegación
+│   ├── theme/                       # Estilos globales y específicos del tema
 │   │   ├── variables.css
 │   │   └── global.css
-│   ├── App.tsx                  # Componente principal de la aplicación
-│   ├── index.tsx                # Punto de entrada para React
-│   └── react-app-env.d.ts       # Configuración del entorno de TypeScript
-├── capacitor.config.ts          # Archivo de configuración de Capacitor
-├── package.json                 # Dependencias y scripts del proyecto
-└── tsconfig.json                # Configuración de TypeScript
-```
+│   ├── App.tsx                      # Componente principal de la aplicación
+│   ├── index.tsx                    # Punto de entrada para React
+│   └── react-app-env.d.ts           # Configuración del entorno de TypeScript
+├── capacitor.config.ts              # Archivo de configuración de Capacitor
+├── package.json                     # Dependencias y scripts del proyecto
+└── tsconfig.json 
 
 ---
 

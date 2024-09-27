@@ -52,6 +52,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ onLocationSelect }) => {
   if (!initialLocation) {
     return <p>Cargando mapa...</p>;
   }
+  const customIcon = new L.Icon({
+    iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',
+    iconSize: [38, 95],
+    iconAnchor: [22, 94],
+    popupAnchor: [-3, -76],
+  });
 
   return (
     <MapContainer center={[initialLocation.latitude, initialLocation.longitude]} zoom={13} style={{ height: '400px', width: '100%' }}>
@@ -60,9 +66,14 @@ const MapComponent: React.FC<MapComponentProps> = ({ onLocationSelect }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       <MapClickHandler />
-      {initialLocation && <Marker position={[initialLocation.latitude, initialLocation.longitude]} />}
+      {initialLocation && (
+        <Marker 
+          position={[initialLocation.latitude, initialLocation.longitude]} 
+          icon={customIcon}
+        />
+      )}
     </MapContainer>
-  );
+    );
 };
 
 export default MapComponent;
