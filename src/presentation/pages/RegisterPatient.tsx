@@ -58,21 +58,17 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
       </IonHeader>
       <IonContent>
         <IonItem>
-          <IonLabel position="stacked">Nombre</IonLabel>
-          <IonInput
-            value={name}
-            placeholder="Nombre"
-            onIonChange={(e: CustomEvent) => setName(e.detail.value!)}
+          <IonLabel position="floating">Nombre Completo</IonLabel>
+          <IonInput 
+            value={formData.fullName} 
+            onIonChange={(e: CustomEvent) => setFormData({ ...formData, fullName: e.detail.value! })} 
           />
         </IonItem>
-
         <IonItem>
-          <IonLabel position="stacked">Edad</IonLabel>
-          <IonInput
-            value={age}
-            type="number"
-            placeholder="Edad"
-            onIonChange={(e: CustomEvent) => setAge(e.detail.value!)}
+          <IonLabel position="floating">Número de ID</IonLabel>
+          <IonInput 
+            value={formData.idNumber} 
+            onIonChange={(e: CustomEvent) => setFormData({ ...formData, idNumber: e.detail.value! })} 
           />
         </IonItem>
 
@@ -91,7 +87,7 @@ const RegisterPatient: React.FC<RegisterPatientProps> = ({ photoRepository }) =>
         </IonGrid>
         
         <IonButton expand="block" onClick={handleSubmit}>
-          Enviar
+          Enviar Registro
         </IonButton>
         
       </IonContent>
